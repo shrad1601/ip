@@ -14,6 +14,7 @@ public class TATerror {
         System.out.println("____________________________________________________________");
 
         String[] tasks = new String[100];
+        boolean[] isDone = new boolean[100];
         int taskCount = 0;
 
         Scanner scanner = new Scanner(System.in);
@@ -23,8 +24,19 @@ public class TATerror {
             System.out.println("____________________________________________________________");
             if (input.equals("list")) {
                 for (int i = 0; i < taskCount; i++) {
-                    System.out.println((i + 1) + ". " + tasks[i]);
+                    String status = isDone[i] ? "[X]" : "[ ]";
+                    System.out.println((i + 1) + "." + status + " " + tasks[i]);
                 }
+            } else if (input.startsWith("mark ")) {
+                int index = Integer.parseInt(input.substring(5)) - 1;
+                isDone[index] = true;
+                System.out.println("Nice! I've marked this task as done:");
+                System.out.println("  [X] " + tasks[index]);
+            } else if (input.startsWith("unmark ")) {
+                int index = Integer.parseInt(input.substring(7)) - 1;
+                isDone[index] = false;
+                System.out.println("OK, I've marked this task as not done yet:");
+                System.out.println("  [ ] " + tasks[index]);
             } else {
                 tasks[taskCount] = input;
                 taskCount++;
