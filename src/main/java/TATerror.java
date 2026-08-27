@@ -13,12 +13,23 @@ public class TATerror {
         System.out.println("I'm TA Terror. Try not to waste my time.");
         System.out.println("____________________________________________________________");
 
+        String[] tasks = new String[100];
+        int taskCount = 0;
+
         Scanner scanner = new Scanner(System.in);
         String input = scanner.nextLine();
 
         while (!input.equals("bye")) {
             System.out.println("____________________________________________________________");
-            System.out.println(input);
+            if (input.equals("list")) {
+                for (int i = 0; i < taskCount; i++) {
+                    System.out.println((i + 1) + ". " + tasks[i]);
+                }
+            } else {
+                tasks[taskCount] = input;
+                taskCount++;
+                System.out.println("added: " + input);
+            }
             System.out.println("____________________________________________________________");
             input = scanner.nextLine();
         }
