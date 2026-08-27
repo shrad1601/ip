@@ -26,6 +26,7 @@ public class TATerror {
             System.out.println("____________________________________________________________");
             try {
                 if (input.equals("list")) {
+                    System.out.println("Here are the tasks in your list:");
                     for (int i = 0; i < taskCount; i++) {
                         System.out.println((i + 1) + "." + formatTask(i, tasks, isDone, types, extraInfo));
                     }
@@ -41,6 +42,22 @@ public class TATerror {
                                 ? "Nice! I've marked this task as done:"
                                 : "OK, I've marked this task as not done yet:");
                         System.out.println("  " + formatTask(index, tasks, isDone, types, extraInfo));
+                    }
+                } else if (input.startsWith("delete ")) {
+                    int index = Integer.parseInt(input.substring(7)) - 1;
+                    if (index < 0 || index >= taskCount) {
+                        System.out.println("OOPS!!! That task number doesn't even exist. Try again.");
+                    } else {
+                        System.out.println("Noted. I've removed this task:");
+                        System.out.println("  " + formatTask(index, tasks, isDone, types, extraInfo));
+                        for (int i = index; i < taskCount - 1; i++) {
+                            tasks[i] = tasks[i + 1];
+                            isDone[i] = isDone[i + 1];
+                            types[i] = types[i + 1];
+                            extraInfo[i] = extraInfo[i + 1];
+                        }
+                        taskCount--;
+                        System.out.println("Now you have " + taskCount + " tasks in the list.");
                     }
                 } else if (input.equals("todo") || input.startsWith("todo ")) {
                     String description = input.length() > 4 ? input.substring(5).trim() : "";
