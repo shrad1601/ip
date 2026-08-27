@@ -1,6 +1,14 @@
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Scanner;
 
 public class TATerror {
+    private static final String DATA_FILE_PATH = "." + File.separator + "data" + File.separator + "tasks.txt";
+
     public static void main(String[] args) {
         String banner = " _____ _         _____                          \n"
                 + "|_   _/ \\       |_   _|__ _ __ _ __ ___  _ __   \n"
@@ -17,7 +25,7 @@ public class TATerror {
         boolean[] isDone = new boolean[100];
         String[] types = new String[100];
         String[] extraInfo = new String[100];
-        int taskCount = 0;
+        int taskCount = loadTasks(tasks, isDone, types, extraInfo);
 
         Scanner scanner = new Scanner(System.in);
         String input = scanner.nextLine();
@@ -42,6 +50,7 @@ public class TATerror {
                                 ? "Nice! I've marked this task as done:"
                                 : "OK, I've marked this task as not done yet:");
                         System.out.println("  " + formatTask(index, tasks, isDone, types, extraInfo));
+                        saveTasks(tasks, isDone, types, extraInfo, taskCount);
                     }
                 } else if (input.startsWith("delete ")) {
                     int index = Integer.parseInt(input.substring(7)) - 1;
@@ -58,6 +67,7 @@ public class TATerror {
                         }
                         taskCount--;
                         System.out.println("Now you have " + taskCount + " tasks in the list.");
+                        saveTasks(tasks, isDone, types, extraInfo, taskCount);
                     }
                 } else if (input.equals("todo") || input.startsWith("todo ")) {
                     String description = input.length() > 4 ? input.substring(5).trim() : "";
@@ -69,6 +79,7 @@ public class TATerror {
                         extraInfo[taskCount] = "";
                         addTask(tasks, isDone, types, extraInfo, taskCount);
                         taskCount++;
+                        saveTasks(tasks, isDone, types, extraInfo, taskCount);
                     }
                 } else if (input.equals("deadline") || input.startsWith("deadline ")) {
                     String rest = input.length() > 8 ? input.substring(9) : "";
@@ -81,6 +92,7 @@ public class TATerror {
                         extraInfo[taskCount] = "by: " + parts[1];
                         addTask(tasks, isDone, types, extraInfo, taskCount);
                         taskCount++;
+                        saveTasks(tasks, isDone, types, extraInfo, taskCount);
                     }
                 } else if (input.equals("event") || input.startsWith("event ")) {
                     String rest = input.length() > 5 ? input.substring(6) : "";
@@ -94,6 +106,7 @@ public class TATerror {
                         extraInfo[taskCount] = "from: " + toSplit[0] + " to: " + toSplit[1];
                         addTask(tasks, isDone, types, extraInfo, taskCount);
                         taskCount++;
+                        saveTasks(tasks, isDone, types, extraInfo, taskCount);
                     }
                 } else {
                     System.out.println("OOPS!!! I have no idea what you just said. Try again, slower this time.");
@@ -123,5 +136,46 @@ public class TATerror {
         String status = isDone[index] ? "[X]" : "[ ]";
         String extra = extraInfo[index].isEmpty() ? "" : " (" + extraInfo[index] + ")";
         return "[" + types[index] + "]" + status + " " + tasks[index] + extra;
+    }
+
+    private static void saveTasks(String[] tasks, boolean[] isDone, String[] types,
+                                  String[] extraInfo, int taskCount) {
+        try {
+            Path dataPath = Paths.get(DATA_FILE_PATH);
+            Files.createDirectories(dataPath.getParent());
+            FileWriter writer = new FileWriter(dataPath.toFile());
+            for (int i = 0; i < taskCount; i++) {
+                String doneFlag = isDone[i] ? "1" : "0";
+                writer.write(types[i] + " | " + doneFlag + " | " + tasks[i] + " | " + extraInfo[i] + "\n");
+            }
+            writer.close();
+        } catch (IOException e) {
+            System.out.println("OOPS!!! Couldn't save your tasks. Don't blame me if you lose them.");
+        }
+    }
+
+    private static int loadTasks(String[] tasks, boolean[] isDone, String[] types, String[] extraInfo) {
+        File dataFile = new File(DATA_FILE_PATH);
+        if (!dataFile.exists()) {
+            return 0;
+        }
+        int count = 0;
+        try {
+            Scanner fileScanner = new Scanner(dataFile);
+            while (fileScanner.hasNextLine()) {
+                String line = fileScanner.nextLine();
+                String[] parts = line.split(" \\| ", -1);
+                types[count] = parts[0];
+                isDone[count] = parts[1].equals("1");
+                tasks[count] = parts[2];
+                extraInfo[count] = parts.length > 3 ? parts[3] : "";
+                count++;
+            }
+            fileScanner.close();
+        } catch (IOException e) {
+            System.out.println("OOPS!!! Couldn't load your saved tasks. Starting fresh.");
+            return 0;
+        }
+        return count;
     }
 }
