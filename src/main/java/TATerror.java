@@ -24,44 +24,65 @@ public class TATerror {
 
         while (!input.equals("bye")) {
             System.out.println("____________________________________________________________");
-            if (input.equals("list")) {
-                for (int i = 0; i < taskCount; i++) {
-                    System.out.println((i + 1) + "." + formatTask(i, tasks, isDone, types, extraInfo));
+            try {
+                if (input.equals("list")) {
+                    for (int i = 0; i < taskCount; i++) {
+                        System.out.println((i + 1) + "." + formatTask(i, tasks, isDone, types, extraInfo));
+                    }
+                } else if (input.startsWith("mark ") || input.startsWith("unmark ")) {
+                    boolean marking = input.startsWith("mark ");
+                    int numberStart = marking ? 5 : 7;
+                    int index = Integer.parseInt(input.substring(numberStart)) - 1;
+                    if (index < 0 || index >= taskCount) {
+                        System.out.println("OOPS!!! That task number doesn't even exist. Try again.");
+                    } else {
+                        isDone[index] = marking;
+                        System.out.println(marking
+                                ? "Nice! I've marked this task as done:"
+                                : "OK, I've marked this task as not done yet:");
+                        System.out.println("  " + formatTask(index, tasks, isDone, types, extraInfo));
+                    }
+                } else if (input.equals("todo") || input.startsWith("todo ")) {
+                    String description = input.length() > 4 ? input.substring(5).trim() : "";
+                    if (description.isEmpty()) {
+                        System.out.println("OOPS!!! A todo needs an actual description. Use your words.");
+                    } else {
+                        types[taskCount] = "T";
+                        tasks[taskCount] = description;
+                        extraInfo[taskCount] = "";
+                        addTask(tasks, isDone, types, extraInfo, taskCount);
+                        taskCount++;
+                    }
+                } else if (input.equals("deadline") || input.startsWith("deadline ")) {
+                    String rest = input.length() > 8 ? input.substring(9) : "";
+                    if (!rest.contains(" /by ")) {
+                        System.out.println("OOPS!!! A deadline needs a description AND a '/by' date.");
+                    } else {
+                        String[] parts = rest.split(" /by ");
+                        types[taskCount] = "D";
+                        tasks[taskCount] = parts[0];
+                        extraInfo[taskCount] = "by: " + parts[1];
+                        addTask(tasks, isDone, types, extraInfo, taskCount);
+                        taskCount++;
+                    }
+                } else if (input.equals("event") || input.startsWith("event ")) {
+                    String rest = input.length() > 5 ? input.substring(6) : "";
+                    if (!rest.contains(" /from ") || !rest.contains(" /to ")) {
+                        System.out.println("OOPS!!! An event needs '/from' and '/to' details. Don't skip steps.");
+                    } else {
+                        String[] fromSplit = rest.split(" /from ");
+                        String[] toSplit = fromSplit[1].split(" /to ");
+                        types[taskCount] = "E";
+                        tasks[taskCount] = fromSplit[0];
+                        extraInfo[taskCount] = "from: " + toSplit[0] + " to: " + toSplit[1];
+                        addTask(tasks, isDone, types, extraInfo, taskCount);
+                        taskCount++;
+                    }
+                } else {
+                    System.out.println("OOPS!!! I have no idea what you just said. Try again, slower this time.");
                 }
-            } else if (input.startsWith("mark ")) {
-                int index = Integer.parseInt(input.substring(5)) - 1;
-                isDone[index] = true;
-                System.out.println("Nice! I've marked this task as done:");
-                System.out.println("  " + formatTask(index, tasks, isDone, types, extraInfo));
-            } else if (input.startsWith("unmark ")) {
-                int index = Integer.parseInt(input.substring(7)) - 1;
-                isDone[index] = false;
-                System.out.println("OK, I've marked this task as not done yet:");
-                System.out.println("  " + formatTask(index, tasks, isDone, types, extraInfo));
-            } else if (input.startsWith("todo ")) {
-                types[taskCount] = "T";
-                tasks[taskCount] = input.substring(5);
-                extraInfo[taskCount] = "";
-                addTask(tasks, isDone, types, extraInfo, taskCount);
-                taskCount++;
-            } else if (input.startsWith("deadline ")) {
-                String rest = input.substring(9);
-                String[] parts = rest.split(" /by ");
-                types[taskCount] = "D";
-                tasks[taskCount] = parts[0];
-                extraInfo[taskCount] = "by: " + parts[1];
-                addTask(tasks, isDone, types, extraInfo, taskCount);
-                taskCount++;
-            } else if (input.startsWith("event ")) {
-                String rest = input.substring(6);
-                String[] fromSplit = rest.split(" /from ");
-                String description = fromSplit[0];
-                String[] toSplit = fromSplit[1].split(" /to ");
-                types[taskCount] = "E";
-                tasks[taskCount] = description;
-                extraInfo[taskCount] = "from: " + toSplit[0] + " to: " + toSplit[1];
-                addTask(tasks, isDone, types, extraInfo, taskCount);
-                taskCount++;
+            } catch (NumberFormatException e) {
+                System.out.println("OOPS!!! That's not even a number. Are you okay?");
             }
             System.out.println("____________________________________________________________");
             input = scanner.nextLine();
