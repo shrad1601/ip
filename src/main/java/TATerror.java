@@ -13,7 +13,128 @@ public class TATerror {
     private static final String DATA_FILE_PATH = "." + File.separator + "data" + File.separator + "tasks.txt";
     private static final DateTimeFormatter DISPLAY_FORMAT = DateTimeFormatter.ofPattern("MMM dd yyyy");
 
+    private String[] descriptions = new String[100];
+    private boolean[] isDone = new boolean[100];
+    private String[] types = new String[100];
+    private String[] byRaw = new String[100];
+    private String[] fromRaw = new String[100];
+    private String[] toRaw = new String[100];
+    private int taskCount;
+
+    public TATerror() {
+        taskCount = loadTasks();
+    }
+
+    public String getResponse(String input) {
+        StringBuilder response = new StringBuilder();
+        try {
+            if (input.equals("bye")) {
+                return "Bye. Try to disappoint someone else next time.";
+            } else if (input.equals("list")) {
+                response.append("Here are the tasks in your list:\n");
+                for (int i = 0; i < taskCount; i++) {
+                    response.append((i + 1) + "." + formatTask(i) + "\n");
+                }
+            } else if (input.startsWith("mark ") || input.startsWith("unmark ")) {
+                boolean marking = input.startsWith("mark ");
+                int numberStart = marking ? 5 : 7;
+                int index = Integer.parseInt(input.substring(numberStart)) - 1;
+                if (index < 0 || index >= taskCount) {
+                    response.append("OOPS!!! That task number doesn't even exist. Try again.");
+                } else {
+                    isDone[index] = marking;
+                    response.append(marking
+                            ? "Nice! I've marked this task as done:\n"
+                            : "OK, I've marked this task as not done yet:\n");
+                    response.append("  " + formatTask(index));
+                    saveTasks();
+                }
+            } else if (input.startsWith("delete ")) {
+                int index = Integer.parseInt(input.substring(7)) - 1;
+                if (index < 0 || index >= taskCount) {
+                    response.append("OOPS!!! That task number doesn't even exist. Try again.");
+                } else {
+                    response.append("Noted. I've removed this task:\n");
+                    response.append("  " + formatTask(index) + "\n");
+                    for (int i = index; i < taskCount - 1; i++) {
+                        descriptions[i] = descriptions[i + 1];
+                        isDone[i] = isDone[i + 1];
+                        types[i] = types[i + 1];
+                        byRaw[i] = byRaw[i + 1];
+                        fromRaw[i] = fromRaw[i + 1];
+                        toRaw[i] = toRaw[i + 1];
+                    }
+                    taskCount--;
+                    response.append("Now you have " + taskCount + " tasks in the list.");
+                    saveTasks();
+                }
+            } else if (input.equals("todo") || input.startsWith("todo ")) {
+                String description = input.length() > 4 ? input.substring(5).trim() : "";
+                if (description.isEmpty()) {
+                    response.append("OOPS!!! A todo needs an actual description. Use your words.");
+                } else {
+                    types[taskCount] = "T";
+                    descriptions[taskCount] = description;
+                    response.append(addTaskMessage(taskCount));
+                    taskCount++;
+                    saveTasks();
+                }
+            } else if (input.equals("deadline") || input.startsWith("deadline ")) {
+                String rest = input.length() > 8 ? input.substring(9) : "";
+                if (!rest.contains(" /by ")) {
+                    response.append("OOPS!!! A deadline needs a description AND a '/by' date (e.g. 2019-10-15).");
+                } else {
+                    String[] parts = rest.split(" /by ");
+                    types[taskCount] = "D";
+                    descriptions[taskCount] = parts[0];
+                    byRaw[taskCount] = parts[1];
+                    response.append(addTaskMessage(taskCount));
+                    taskCount++;
+                    saveTasks();
+                }
+            } else if (input.equals("event") || input.startsWith("event ")) {
+                String rest = input.length() > 5 ? input.substring(6) : "";
+                if (!rest.contains(" /from ") || !rest.contains(" /to ")) {
+                    response.append("OOPS!!! An event needs '/from' and '/to' details. Don't skip steps.");
+                } else {
+                    String[] fromSplit = rest.split(" /from ");
+                    String[] toSplit = fromSplit[1].split(" /to ");
+                    types[taskCount] = "E";
+                    descriptions[taskCount] = fromSplit[0];
+                    fromRaw[taskCount] = toSplit[0];
+                    toRaw[taskCount] = toSplit[1];
+                    response.append(addTaskMessage(taskCount));
+                    taskCount++;
+                    saveTasks();
+                }
+            } else if (input.equals("find") || input.startsWith("find ")) {
+                String keyword = input.length() > 4 ? input.substring(5).trim() : "";
+                if (keyword.isEmpty()) {
+                    response.append("OOPS!!! Find what, exactly? Give me a keyword.");
+                } else {
+                    response.append("Here are the matching tasks in your list:\n");
+                    int matchCount = 0;
+                    for (int i = 0; i < taskCount; i++) {
+                        if (descriptions[i].contains(keyword)) {
+                            matchCount++;
+                            response.append(matchCount + "." + formatTask(i) + "\n");
+                        }
+                    }
+                    if (matchCount == 0) {
+                        response.append("No matches. Shocking, I know.");
+                    }
+                }
+            } else {
+                response.append("OOPS!!! I have no idea what you just said. Try again, slower this time.");
+            }
+        } catch (NumberFormatException e) {
+            response.append("OOPS!!! That's not even a number. Are you okay?");
+        }
+        return response.toString().trim();
+    }
+
     public static void main(String[] args) {
+        TATerror taTerror = new TATerror();
         String banner = " _____ _         _____                          \n"
                 + "|_   _/ \\       |_   _|__ _ __ _ __ ___  _ __   \n"
                 + "  | |/ _ \\        | |/ _ \\ '__| '__/ _ \\| '__|  \n"
@@ -25,140 +146,26 @@ public class TATerror {
         System.out.println("I'm TA Terror. Try not to waste my time.");
         System.out.println("____________________________________________________________");
 
-        String[] descriptions = new String[100];
-        boolean[] isDone = new boolean[100];
-        String[] types = new String[100];
-        String[] byRaw = new String[100];
-        String[] fromRaw = new String[100];
-        String[] toRaw = new String[100];
-        int taskCount = loadTasks(descriptions, isDone, types, byRaw, fromRaw, toRaw);
-
         Scanner scanner = new Scanner(System.in);
         String input = scanner.nextLine();
-
         while (!input.equals("bye")) {
             System.out.println("____________________________________________________________");
-            try {
-                if (input.equals("list")) {
-                    System.out.println("Here are the tasks in your list:");
-                    for (int i = 0; i < taskCount; i++) {
-                        System.out.println((i + 1) + "."
-                                + formatTask(i, descriptions, isDone, types, byRaw, fromRaw, toRaw));
-                    }
-                } else if (input.startsWith("mark ") || input.startsWith("unmark ")) {
-                    boolean marking = input.startsWith("mark ");
-                    int numberStart = marking ? 5 : 7;
-                    int index = Integer.parseInt(input.substring(numberStart)) - 1;
-                    if (index < 0 || index >= taskCount) {
-                        System.out.println("OOPS!!! That task number doesn't even exist. Try again.");
-                    } else {
-                        isDone[index] = marking;
-                        System.out.println(marking
-                                ? "Nice! I've marked this task as done:"
-                                : "OK, I've marked this task as not done yet:");
-                        System.out.println("  " + formatTask(index, descriptions, isDone, types, byRaw, fromRaw, toRaw));
-                        saveTasks(descriptions, isDone, types, byRaw, fromRaw, toRaw, taskCount);
-                    }
-                } else if (input.startsWith("delete ")) {
-                    int index = Integer.parseInt(input.substring(7)) - 1;
-                    if (index < 0 || index >= taskCount) {
-                        System.out.println("OOPS!!! That task number doesn't even exist. Try again.");
-                    } else {
-                        System.out.println("Noted. I've removed this task:");
-                        System.out.println("  " + formatTask(index, descriptions, isDone, types, byRaw, fromRaw, toRaw));
-                        for (int i = index; i < taskCount - 1; i++) {
-                            descriptions[i] = descriptions[i + 1];
-                            isDone[i] = isDone[i + 1];
-                            types[i] = types[i + 1];
-                            byRaw[i] = byRaw[i + 1];
-                            fromRaw[i] = fromRaw[i + 1];
-                            toRaw[i] = toRaw[i + 1];
-                        }
-                        taskCount--;
-                        System.out.println("Now you have " + taskCount + " tasks in the list.");
-                        saveTasks(descriptions, isDone, types, byRaw, fromRaw, toRaw, taskCount);
-                    }
-                } else if (input.equals("todo") || input.startsWith("todo ")) {
-                    String description = input.length() > 4 ? input.substring(5).trim() : "";
-                    if (description.isEmpty()) {
-                        System.out.println("OOPS!!! A todo needs an actual description. Use your words.");
-                    } else {
-                        types[taskCount] = "T";
-                        descriptions[taskCount] = description;
-                        addTask(descriptions, isDone, types, byRaw, fromRaw, toRaw, taskCount);
-                        taskCount++;
-                        saveTasks(descriptions, isDone, types, byRaw, fromRaw, toRaw, taskCount);
-                    }
-                } else if (input.equals("deadline") || input.startsWith("deadline ")) {
-                    String rest = input.length() > 8 ? input.substring(9) : "";
-                    if (!rest.contains(" /by ")) {
-                        System.out.println("OOPS!!! A deadline needs a description AND a '/by' date (e.g. 2019-10-15).");
-                    } else {
-                        String[] parts = rest.split(" /by ");
-                        types[taskCount] = "D";
-                        descriptions[taskCount] = parts[0];
-                        byRaw[taskCount] = parts[1];
-                        addTask(descriptions, isDone, types, byRaw, fromRaw, toRaw, taskCount);
-                        taskCount++;
-                        saveTasks(descriptions, isDone, types, byRaw, fromRaw, toRaw, taskCount);
-                    }
-                } else if (input.equals("event") || input.startsWith("event ")) {
-                    String rest = input.length() > 5 ? input.substring(6) : "";
-                    if (!rest.contains(" /from ") || !rest.contains(" /to ")) {
-                        System.out.println("OOPS!!! An event needs '/from' and '/to' details. Don't skip steps.");
-                    } else {
-                        String[] fromSplit = rest.split(" /from ");
-                        String[] toSplit = fromSplit[1].split(" /to ");
-                        types[taskCount] = "E";
-                        descriptions[taskCount] = fromSplit[0];
-                        fromRaw[taskCount] = toSplit[0];
-                        toRaw[taskCount] = toSplit[1];
-                        addTask(descriptions, isDone, types, byRaw, fromRaw, toRaw, taskCount);
-                        taskCount++;
-                        saveTasks(descriptions, isDone, types, byRaw, fromRaw, toRaw, taskCount);
-                    }
-                } else if (input.equals("find") || input.startsWith("find ")) {
-                    String keyword = input.length() > 4 ? input.substring(5).trim() : "";
-                    if (keyword.isEmpty()) {
-                        System.out.println("OOPS!!! Find what, exactly? Give me a keyword.");
-                    } else {
-                        System.out.println("Here are the matching tasks in your list:");
-                        int matchCount = 0;
-                        for (int i = 0; i < taskCount; i++) {
-                            if (descriptions[i].contains(keyword)) {
-                                matchCount++;
-                                System.out.println(matchCount + "."
-                                        + formatTask(i, descriptions, isDone, types, byRaw, fromRaw, toRaw));
-                            }
-                        }
-                        if (matchCount == 0) {
-                            System.out.println("No matches. Shocking, I know.");
-                        }
-                    }
-                } else {
-                    System.out.println("OOPS!!! I have no idea what you just said. Try again, slower this time.");
-                }
-            } catch (NumberFormatException e) {
-                System.out.println("OOPS!!! That's not even a number. Are you okay?");
-            }
+            System.out.println(taTerror.getResponse(input));
             System.out.println("____________________________________________________________");
             input = scanner.nextLine();
         }
-
         System.out.println("____________________________________________________________");
-        System.out.println("Bye. Try to disappoint someone else next time.");
+        System.out.println(taTerror.getResponse("bye"));
         System.out.println("____________________________________________________________");
         scanner.close();
     }
 
-    private static void addTask(String[] descriptions, boolean[] isDone, String[] types,
-                                String[] byRaw, String[] fromRaw, String[] toRaw, int index) {
-        System.out.println("Got it. I've added this task:");
-        System.out.println("  " + formatTask(index, descriptions, isDone, types, byRaw, fromRaw, toRaw));
-        System.out.println("Now you have " + (index + 1) + " tasks in the list.");
+    private String addTaskMessage(int index) {
+        return "Got it. I've added this task:\n  " + formatTask(index)
+                + "\nNow you have " + (index + 1) + " tasks in the list.";
     }
 
-    private static String formatDeadlineBy(String raw) {
+    private String formatDeadlineBy(String raw) {
         try {
             LocalDate date = LocalDate.parse(raw.trim());
             return date.format(DISPLAY_FORMAT);
@@ -167,8 +174,7 @@ public class TATerror {
         }
     }
 
-    private static String formatTask(int index, String[] descriptions, boolean[] isDone,
-                                     String[] types, String[] byRaw, String[] fromRaw, String[] toRaw) {
+    private String formatTask(int index) {
         String status = isDone[index] ? "[X]" : "[ ]";
         String base = "[" + types[index] + "]" + status + " " + descriptions[index];
         if (types[index].equals("D")) {
@@ -179,8 +185,7 @@ public class TATerror {
         return base;
     }
 
-    private static void saveTasks(String[] descriptions, boolean[] isDone, String[] types,
-                                  String[] byRaw, String[] fromRaw, String[] toRaw, int taskCount) {
+    private void saveTasks() {
         try {
             Path dataPath = Paths.get(DATA_FILE_PATH);
             Files.createDirectories(dataPath.getParent());
@@ -202,8 +207,7 @@ public class TATerror {
         }
     }
 
-    private static int loadTasks(String[] descriptions, boolean[] isDone, String[] types,
-                                 String[] byRaw, String[] fromRaw, String[] toRaw) {
+    private int loadTasks() {
         File dataFile = new File(DATA_FILE_PATH);
         if (!dataFile.exists()) {
             return 0;
