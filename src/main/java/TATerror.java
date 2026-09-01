@@ -117,6 +117,24 @@ public class TATerror {
                         taskCount++;
                         saveTasks(descriptions, isDone, types, byRaw, fromRaw, toRaw, taskCount);
                     }
+                } else if (input.equals("find") || input.startsWith("find ")) {
+                    String keyword = input.length() > 4 ? input.substring(5).trim() : "";
+                    if (keyword.isEmpty()) {
+                        System.out.println("OOPS!!! Find what, exactly? Give me a keyword.");
+                    } else {
+                        System.out.println("Here are the matching tasks in your list:");
+                        int matchCount = 0;
+                        for (int i = 0; i < taskCount; i++) {
+                            if (descriptions[i].contains(keyword)) {
+                                matchCount++;
+                                System.out.println(matchCount + "."
+                                        + formatTask(i, descriptions, isDone, types, byRaw, fromRaw, toRaw));
+                            }
+                        }
+                        if (matchCount == 0) {
+                            System.out.println("No matches. Shocking, I know.");
+                        }
+                    }
                 } else {
                     System.out.println("OOPS!!! I have no idea what you just said. Try again, slower this time.");
                 }
