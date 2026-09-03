@@ -1,3 +1,5 @@
+package taterror.task;
+
 /**
  * A task that spans a start and end time.
  */

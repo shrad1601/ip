@@ -1,3 +1,5 @@
+package taterror;
+
 /**
  * Workaround entry point for running the JavaFX GUI. Some JDK/module-path setups
  * throw "JavaFX runtime components are missing" when a {@code javafx.application

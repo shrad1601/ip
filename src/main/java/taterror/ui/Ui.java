@@ -1,9 +1,12 @@
+package taterror.ui;
+
 import java.util.Scanner;
 
 /**
- * Console interaction for the text-based CLI entry point ({@link
- * TATerror#main(String[])}). The JavaFX GUI has its own presentation layer
- * ({@link MainWindow}, {@link DialogBox}) and doesn't use this class.
+ * Console interaction for the text-based CLI entry point (see
+ * {@link taterror.TATerror#main(String[])}). The JavaFX GUI has its own
+ * presentation layer ({@link taterror.gui.MainWindow},
+ * {@link taterror.gui.DialogBox}) and doesn't use this class.
  */
 public class Ui {
     private static final String DIVIDER = "____________________________________________________________";

@@ -1,3 +1,5 @@
+package taterror.parser;
+
 /**
  * Recognizes and extracts structured data from raw user command lines.
  * Stateless - all methods are static.

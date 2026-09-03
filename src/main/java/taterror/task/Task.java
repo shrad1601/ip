@@ -1,3 +1,5 @@
+package taterror.task;
+
 /**
  * A single task tracked by TA Terror. Common state and formatting logic shared
  * by {@link Todo}, {@link Deadline}, and {@link Event}; each subclass supplies

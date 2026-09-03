@@ -37,10 +37,8 @@ test {
 }
 
 application {
-    // Launcher is the JavaFX workaround entry point (see src/main/java/Launcher.java).
-    // seedu.duke.Duke (the template default) doesn't apply here - this project
-    // hasn't done the A-Packages increment yet, so classes are in the default package.
-    mainClass = 'Launcher'
+    // Launcher is the JavaFX workaround entry point (see src/main/java/taterror/Launcher.java).
+    mainClass = 'taterror.Launcher'
 }
 
 jar {

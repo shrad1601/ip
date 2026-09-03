@@ -1,3 +1,5 @@
+package taterror.storage;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -7,6 +9,11 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+
+import taterror.task.Deadline;
+import taterror.task.Event;
+import taterror.task.Task;
+import taterror.task.Todo;
 
 /**
  * Reads and writes the task list to a pipe-delimited save file, e.g.
