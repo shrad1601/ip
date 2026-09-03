@@ -13,6 +13,9 @@ public class Ui {
 
     private final Scanner scanner;
 
+    /**
+     * Creates a Ui reading commands from standard input.
+     */
     public Ui() {
         this.scanner = new Scanner(System.in);
     }
