@@ -1,3 +1,5 @@
+package taterror.task;
+
 /**
  * A task with just a description and no date/time attached.
  */

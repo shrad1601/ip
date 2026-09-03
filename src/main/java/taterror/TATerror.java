@@ -1,11 +1,23 @@
+package taterror;
+
+import taterror.parser.Parser;
+import taterror.storage.Storage;
+import taterror.task.Deadline;
+import taterror.task.Event;
+import taterror.task.Task;
+import taterror.task.TaskList;
+import taterror.task.Todo;
+import taterror.ui.Ui;
+
 /**
  * Core logic of the "TA Terror" task-tracking chatbot: a sarcastic Duke-clone that
  * parses user commands (todo/deadline/event/list/mark/unmark/delete/find/bye),
  * mutates a {@link TaskList}, and persists it via {@link Storage}.
  *
  * <p>This class is UI-agnostic - both the text CLI ({@link #main(String[])}) and the
- * JavaFX GUI ({@link MainWindow}) drive it purely through {@link #getResponse(String)}.
- * Command recognition/extraction is delegated to {@link Parser}.
+ * JavaFX GUI ({@link taterror.gui.MainWindow}) drive it purely through
+ * {@link #getResponse(String)}. Command recognition/extraction is delegated to
+ * {@link Parser}.
  */
 public class TATerror {
     private static final String DATA_FILE_PATH = "." + java.io.File.separator + "data"

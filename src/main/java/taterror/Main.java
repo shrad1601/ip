@@ -1,3 +1,5 @@
+package taterror;
+
 import java.io.IOException;
 
 import javafx.application.Application;
@@ -5,6 +7,8 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
+
+import taterror.gui.MainWindow;
 
 /**
  * JavaFX entry point for the TA Terror GUI. Not run directly - see
