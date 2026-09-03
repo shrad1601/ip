@@ -9,6 +9,14 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Scanner;
 
+/**
+ * Core logic of the "TA Terror" task-tracking chatbot: a sarcastic Duke-clone that
+ * parses user commands (todo/deadline/event/list/mark/unmark/delete/find/bye),
+ * mutates an in-memory task list, and persists it to {@link #DATA_FILE_PATH}.
+ *
+ * <p>This class is UI-agnostic - both the text CLI ({@link #main(String[])}) and the
+ * JavaFX GUI ({@link MainWindow}) drive it purely through {@link #getResponse(String)}.
+ */
 public class TATerror {
     private static final String DATA_FILE_PATH = "." + File.separator + "data" + File.separator + "tasks.txt";
     private static final DateTimeFormatter DISPLAY_FORMAT = DateTimeFormatter.ofPattern("MMM dd yyyy");
@@ -21,10 +29,28 @@ public class TATerror {
     private String[] toRaw = new String[100];
     private int taskCount;
 
+    /**
+     * Creates a new TA Terror instance, loading any previously saved tasks from
+     * {@link #DATA_FILE_PATH} (starting with an empty list if none exists).
+     */
     public TATerror() {
         taskCount = loadTasks();
     }
 
+    /**
+     * Parses one line of user input, applies its effect to the task list (if any),
+     * and returns the chatbot's reply text.
+     *
+     * <p>Supported commands: {@code bye}, {@code list}, {@code mark <n>},
+     * {@code unmark <n>}, {@code delete <n>}, {@code todo <description>},
+     * {@code deadline <description> /by <date>},
+     * {@code event <description> /from <start> /to <end>}, and
+     * {@code find <keyword>}. Anything else, or a malformed index for
+     * mark/unmark/delete, produces an error reply rather than throwing.
+     *
+     * @param input the raw command line typed by the user
+     * @return the chatbot's reply, ready to display as-is
+     */
     public String getResponse(String input) {
         StringBuilder response = new StringBuilder();
         try {
@@ -133,6 +159,12 @@ public class TATerror {
         return response.toString().trim();
     }
 
+    /**
+     * Runs TA Terror as a text-based CLI: prints the greeting banner, then reads
+     * commands from standard input and prints each reply until {@code bye}.
+     *
+     * @param args unused
+     */
     public static void main(String[] args) {
         TATerror taTerror = new TATerror();
         String banner = " _____ _         _____                          \n"
@@ -160,11 +192,21 @@ public class TATerror {
         scanner.close();
     }
 
+    /**
+     * Builds the standard "task added" confirmation message for the task at
+     * {@code index}, including the updated task count.
+     */
     private String addTaskMessage(int index) {
         return "Got it. I've added this task:\n  " + formatTask(index)
                 + "\nNow you have " + (index + 1) + " tasks in the list.";
     }
 
+    /**
+     * Formats a raw deadline date string for display. If {@code raw} parses as an
+     * ISO-8601 date (e.g. {@code 2019-10-15}), it's rendered as "MMM dd yyyy"
+     * (e.g. "Oct 15 2019"); otherwise it's returned unchanged, so a freeform
+     * date string typed by the user doesn't crash the display.
+     */
     private String formatDeadlineBy(String raw) {
         try {
             LocalDate date = LocalDate.parse(raw.trim());
@@ -174,6 +216,10 @@ public class TATerror {
         }
     }
 
+    /**
+     * Renders the task at {@code index} as a single display line, e.g.
+     * {@code [T][X] read book} or {@code [D][ ] submit report (by: Sep 01 2026)}.
+     */
     private String formatTask(int index) {
         String status = isDone[index] ? "[X]" : "[ ]";
         String base = "[" + types[index] + "]" + status + " " + descriptions[index];
@@ -185,6 +231,11 @@ public class TATerror {
         return base;
     }
 
+    /**
+     * Writes every current task to {@link #DATA_FILE_PATH} in the pipe-delimited
+     * save format (creating the parent directory if needed). Failures are reported
+     * to the user rather than thrown, since a save failure shouldn't crash the app.
+     */
     private void saveTasks() {
         try {
             Path dataPath = Paths.get(DATA_FILE_PATH);
@@ -207,6 +258,12 @@ public class TATerror {
         }
     }
 
+    /**
+     * Reads tasks from {@link #DATA_FILE_PATH} into the in-memory arrays.
+     *
+     * @return the number of tasks loaded, or 0 if the save file doesn't exist yet
+     *         or couldn't be read
+     */
     private int loadTasks() {
         File dataFile = new File(DATA_FILE_PATH);
         if (!dataFile.exists()) {
