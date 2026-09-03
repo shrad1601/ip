@@ -5,6 +5,12 @@ import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.layout.VBox;
 
+/**
+ * FXML controller for the main chat window ({@code view/MainWindow.fxml}): the
+ * scrollable dialog history, the text input field, and the Send button. Wires
+ * user input to a {@link TATerror} instance and renders each exchange as a pair
+ * of {@link DialogBox} bubbles.
+ */
 public class MainWindow {
     @FXML
     private ScrollPane scrollPane;
@@ -20,11 +26,23 @@ public class MainWindow {
     private Image userImage = new Image(this.getClass().getResourceAsStream("/images/DaUser.png"));
     private Image taTerrorImage = new Image(this.getClass().getResourceAsStream("/images/DaDuke.png"));
 
+    /**
+     * FXML lifecycle callback: binds the scroll position to the dialog container's
+     * height so the view auto-scrolls to the newest message as the conversation
+     * grows.
+     */
     @FXML
     public void initialize() {
         scrollPane.vvalueProperty().bind(dialogContainer.heightProperty());
     }
 
+    /**
+     * Supplies the chatbot instance this window talks to, and shows its intro
+     * greeting as the first dialog bubble. Must be called once, right after this
+     * controller is loaded from FXML, before the user can send anything.
+     *
+     * @param t the chatbot instance to route all future user input through
+     */
     public void setTaTerror(TATerror t) {
         taTerror = t;
         dialogContainer.getChildren().add(
@@ -32,6 +50,12 @@ public class MainWindow {
         );
     }
 
+    /**
+     * Fired when the user presses Enter in the input field or clicks Send. Reads
+     * the current input, gets the chatbot's reply, and appends both as a new pair
+     * of dialog bubbles - unless the input is blank, in which case nothing
+     * happens.
+     */
     @FXML
     private void handleUserInput() {
         String input = userInput.getText();

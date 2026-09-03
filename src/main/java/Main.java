@@ -6,10 +6,20 @@ import javafx.scene.Scene;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 
+/**
+ * JavaFX entry point for the TA Terror GUI. Not run directly - see
+ * {@link Launcher}, which exists as a workaround for the "missing JavaFX
+ * runtime" error some JDK setups hit when an {@link Application} subclass
+ * is launched as the main class directly.
+ */
 public class Main extends Application {
 
     private TATerror taTerror = new TATerror();
 
+    /**
+     * Loads the main window's FXML, wires it to a fresh {@link TATerror}
+     * instance, and shows the stage.
+     */
     @Override
     public void start(Stage stage) {
         try {
@@ -27,6 +37,12 @@ public class Main extends Application {
         }
     }
 
+    /**
+     * Launches the JavaFX application. Prefer {@link Launcher#main(String[])} as
+     * the actual run/jar entry point.
+     *
+     * @param args unused
+     */
     public static void main(String[] args) {
         launch(args);
     }
