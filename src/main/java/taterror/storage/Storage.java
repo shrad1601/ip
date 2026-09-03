@@ -23,6 +23,8 @@ public class Storage {
     private final String filePath;
 
     /**
+     * Creates a storage bound to a single save file.
+     *
      * @param filePath path (relative or absolute) of the save file this instance
      *                 reads from and writes to
      */

@@ -13,10 +13,16 @@ public abstract class Task {
         this.description = description;
     }
 
+    /**
+     * Marks this task as done.
+     */
     public void markAsDone() {
         isDone = true;
     }
 
+    /**
+     * Marks this task as not done.
+     */
     public void markAsNotDone() {
         isDone = false;
     }
@@ -30,19 +36,21 @@ public abstract class Task {
     }
 
     /**
-     * Single-letter code identifying this task's type in the save file: T, D, or E.
+     * Returns the single-letter code identifying this task's type in the save
+     * file: T, D, or E.
      */
     public abstract String getTypeCode();
 
     /**
-     * This task's type-specific fields, formatted for the save file (already
-     * including a leading " | " separator per field), or "" if it has none.
+     * Returns this task's type-specific fields, formatted for the save file
+     * (already including a leading " | " separator per field), or "" if it
+     * has none.
      */
     public abstract String toSaveDetail();
 
     /**
-     * This task's type-specific detail text for display (e.g. "(by: ...)"),
-     * or "" if it has none.
+     * Returns this task's type-specific detail text for display (e.g.
+     * "(by: ...)"), or "" if it has none.
      */
     public abstract String toDisplayDetail();
 

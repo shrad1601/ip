@@ -26,6 +26,9 @@ public class TaskList {
         this.tasks = new ArrayList<>(initialTasks);
     }
 
+    /**
+     * Appends {@code task} to the end of the list.
+     */
     public void add(Task task) {
         tasks.add(task);
     }
@@ -46,15 +49,15 @@ public class TaskList {
     }
 
     /**
-     * Whether {@code index} refers to an actual task in this list (i.e. is safe
-     * to pass to {@link #get} or {@link #remove}).
+     * Returns whether {@code index} refers to an actual task in this list
+     * (i.e. is safe to pass to {@link #get} or {@link #remove}).
      */
     public boolean isValidIndex(int index) {
         return index >= 0 && index < tasks.size();
     }
 
     /**
-     * A live, mutable view of all tasks, in list order. Intended for
+     * Returns a live, mutable view of all tasks, in list order. Intended for
      * {@link Storage#save}; callers elsewhere should prefer {@link #get}.
      */
     public List<Task> asList() {

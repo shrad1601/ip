@@ -12,15 +12,18 @@ public class Deadline extends Task {
 
     private final String byRaw;
 
+    /**
+     * Creates a deadline with the given description and raw "by" date text.
+     */
     public Deadline(String description, String byRaw) {
         super(description);
         this.byRaw = byRaw;
     }
 
     /**
-     * The raw "by" text exactly as the user typed it (before any date parsing),
-     * used both for the save file and as a display fallback if it isn't a valid
-     * ISO-8601 date.
+     * Returns the raw "by" text exactly as the user typed it (before any date
+     * parsing), used both for the save file and as a display fallback if it
+     * isn't a valid ISO-8601 date.
      */
     public String getByRaw() {
         return byRaw;

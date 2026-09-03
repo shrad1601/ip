@@ -7,6 +7,9 @@ public class Event extends Task {
     private final String fromRaw;
     private final String toRaw;
 
+    /**
+     * Creates an event with the given description, start, and end.
+     */
     public Event(String description, String fromRaw, String toRaw) {
         super(description);
         this.fromRaw = fromRaw;

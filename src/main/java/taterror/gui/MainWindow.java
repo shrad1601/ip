@@ -31,9 +31,9 @@ public class MainWindow {
     private Image taTerrorImage = new Image(this.getClass().getResourceAsStream("/images/DaDuke.png"));
 
     /**
-     * FXML lifecycle callback: binds the scroll position to the dialog container's
-     * height so the view auto-scrolls to the newest message as the conversation
-     * grows.
+     * Binds the scroll position to the dialog container's height (an FXML
+     * lifecycle callback), so the view auto-scrolls to the newest message as
+     * the conversation grows.
      */
     @FXML
     public void initialize() {
@@ -55,10 +55,10 @@ public class MainWindow {
     }
 
     /**
-     * Fired when the user presses Enter in the input field or clicks Send. Reads
-     * the current input, gets the chatbot's reply, and appends both as a new pair
-     * of dialog bubbles - unless the input is blank, in which case nothing
-     * happens.
+     * Reads the current input, gets the chatbot's reply, and appends both as a
+     * new pair of dialog bubbles - unless the input is blank, in which case
+     * nothing happens. Fired when the user presses Enter in the input field or
+     * clicks Send.
      */
     @FXML
     private void handleUserInput() {

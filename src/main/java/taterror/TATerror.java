@@ -1,5 +1,7 @@
 package taterror;
 
+import java.io.File;
+
 import taterror.parser.Parser;
 import taterror.storage.Storage;
 import taterror.task.Deadline;
@@ -20,8 +22,7 @@ import taterror.ui.Ui;
  * {@link Parser}.
  */
 public class TATerror {
-    private static final String DATA_FILE_PATH = "." + java.io.File.separator + "data"
-            + java.io.File.separator + "tasks.txt";
+    private static final String DATA_FILE_PATH = "." + File.separator + "data" + File.separator + "tasks.txt";
 
     private final Storage storage;
     private final TaskList tasks;
