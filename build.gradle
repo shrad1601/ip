@@ -51,7 +51,7 @@ jar {
 }
 
 shadowJar {
-    archiveFileName = 'duke.jar'
+    archiveFileName = 'taterror.jar'
 }
 
 run {
