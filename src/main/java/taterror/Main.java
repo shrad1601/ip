@@ -7,7 +7,6 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
-
 import taterror.gui.MainWindow;
 
 /**
@@ -18,10 +17,10 @@ import taterror.gui.MainWindow;
  */
 public class Main extends Application {
 
-    private TATerror taTerror = new TATerror();
+    private TaTerror taTerror = new TaTerror();
 
     /**
-     * Loads the main window's FXML, wires it to a fresh {@link TATerror}
+     * Loads the main window's FXML, wires it to a fresh {@link TaTerror}
      * instance, and shows the stage.
      */
     @Override
