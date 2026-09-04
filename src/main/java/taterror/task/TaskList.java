@@ -5,8 +5,8 @@ import java.util.List;
 
 /**
  * The in-memory list of tasks, and the operations to add, remove, look up, and
- * search them. Owns no persistence logic itself - see {@link Storage} for
- * loading/saving.
+ * search them. Owns no persistence logic itself - see {@link taterror.storage.Storage}
+ * for loading/saving.
  */
 public class TaskList {
     private final List<Task> tasks;
@@ -20,7 +20,7 @@ public class TaskList {
 
     /**
      * Creates a task list pre-populated with {@code initialTasks} (e.g. as loaded
-     * by {@link Storage#load()}).
+     * by {@link taterror.storage.Storage#load()}).
      */
     public TaskList(List<Task> initialTasks) {
         this.tasks = new ArrayList<>(initialTasks);
@@ -31,6 +31,15 @@ public class TaskList {
      */
     public void add(Task task) {
         tasks.add(task);
+    }
+
+    /**
+     * Appends zero or more tasks to the end of the list, in the order given.
+     */
+    public void addAll(Task... tasks) {
+        for (Task task : tasks) {
+            this.tasks.add(task);
+        }
     }
 
     /**
@@ -58,7 +67,8 @@ public class TaskList {
 
     /**
      * Returns a live, mutable view of all tasks, in list order. Intended for
-     * {@link Storage#save}; callers elsewhere should prefer {@link #get}.
+     * {@link taterror.storage.Storage#save}; callers elsewhere should prefer
+     * {@link #get}.
      */
     public List<Task> asList() {
         return tasks;
