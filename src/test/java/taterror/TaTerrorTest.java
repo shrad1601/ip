@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
 /**
- * Tests for {@link TATerror#getResponse(String)}.
+ * Tests for {@link TaTerror#getResponse(String)}.
  *
  * <p>Deliberately limited to inputs that do NOT trigger {@code Storage.save()}
  * (i.e. no successful todo/deadline/event/mark/unmark/delete), so running these
@@ -14,17 +14,17 @@ import org.junit.jupiter.api.Test;
  * targets a distinct validation/parsing branch inside {@code getResponse}, not
  * just the happy path.
  */
-public class TATerrorTest {
+public class TaTerrorTest {
 
     @Test
     public void getResponse_byeCommand_returnsFarewellMessage() {
-        TATerror taTerror = new TATerror();
+        TaTerror taTerror = new TaTerror();
         assertEquals("Bye. Try to disappoint someone else next time.", taTerror.getResponse("bye"));
     }
 
     @Test
     public void getResponse_unrecognizedCommand_returnsErrorMessage() {
-        TATerror taTerror = new TATerror();
+        TaTerror taTerror = new TaTerror();
         assertEquals(
                 "OOPS!!! I have no idea what you just said. Try again, slower this time.",
                 taTerror.getResponse("blahblahblah"));
@@ -32,28 +32,28 @@ public class TATerrorTest {
 
     @Test
     public void getResponse_markWithNonNumericIndex_returnsNumberFormatError() {
-        TATerror taTerror = new TATerror();
+        TaTerror taTerror = new TaTerror();
         // "abc" isn't a number, so Integer.parseInt throws before any task is touched.
         assertEquals("OOPS!!! That's not even a number. Are you okay?", taTerror.getResponse("mark abc"));
     }
 
     @Test
     public void getResponse_markWithOutOfRangeIndex_returnsRangeError() {
-        TATerror taTerror = new TATerror();
+        TaTerror taTerror = new TaTerror();
         // Index is numeric but absurdly out of range, so no task is actually marked/saved.
         assertEquals("OOPS!!! That task number doesn't even exist. Try again.", taTerror.getResponse("mark 99999"));
     }
 
     @Test
     public void getResponse_todoWithoutDescription_returnsValidationErrorAndDoesNotAddTask() {
-        TATerror taTerror = new TATerror();
+        TaTerror taTerror = new TaTerror();
         assertEquals(
                 "OOPS!!! A todo needs an actual description. Use your words.", taTerror.getResponse("todo"));
     }
 
     @Test
     public void getResponse_deadlineWithoutByClause_returnsValidationError() {
-        TATerror taTerror = new TATerror();
+        TaTerror taTerror = new TaTerror();
         assertEquals(
                 "OOPS!!! A deadline needs a description AND a '/by' date (e.g. 2019-10-15).",
                 taTerror.getResponse("deadline return book"));
@@ -61,7 +61,7 @@ public class TATerrorTest {
 
     @Test
     public void getResponse_eventWithoutFromOrTo_returnsValidationError() {
-        TATerror taTerror = new TATerror();
+        TaTerror taTerror = new TaTerror();
         assertEquals(
                 "OOPS!!! An event needs '/from' and '/to' details. Don't skip steps.",
                 taTerror.getResponse("event project meeting"));
@@ -69,7 +69,7 @@ public class TATerrorTest {
 
     @Test
     public void getResponse_listCommand_startsWithExpectedHeader() {
-        TATerror taTerror = new TATerror();
+        TaTerror taTerror = new TaTerror();
         // Loose/structural assertion on purpose: the exact task contents depend on
         // whatever is currently saved in data/tasks.txt, which this test must not
         // assume or depend on.
@@ -79,7 +79,7 @@ public class TATerrorTest {
 
     @Test
     public void getResponse_findWithoutKeyword_returnsValidationError() {
-        TATerror taTerror = new TATerror();
+        TaTerror taTerror = new TaTerror();
         assertEquals("OOPS!!! Find what, exactly? Give me a keyword.", taTerror.getResponse("find"));
     }
 }

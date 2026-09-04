@@ -4,7 +4,7 @@ import java.util.Scanner;
 
 /**
  * Console interaction for the text-based CLI entry point (see
- * {@link taterror.TATerror#main(String[])}). The JavaFX GUI has its own
+ * {@link taterror.TaTerror#main(String[])}). The JavaFX GUI has its own
  * presentation layer ({@link taterror.gui.MainWindow},
  * {@link taterror.gui.DialogBox}) and doesn't use this class.
  */

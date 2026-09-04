@@ -6,13 +6,12 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.layout.VBox;
-
-import taterror.TATerror;
+import taterror.TaTerror;
 
 /**
  * FXML controller for the main chat window ({@code view/MainWindow.fxml}): the
  * scrollable dialog history, the text input field, and the Send button. Wires
- * user input to a {@link TATerror} instance and renders each exchange as a pair
+ * user input to a {@link TaTerror} instance and renders each exchange as a pair
  * of {@link DialogBox} bubbles.
  */
 public class MainWindow {
@@ -25,7 +24,7 @@ public class MainWindow {
     @FXML
     private Button sendButton;
 
-    private TATerror taTerror;
+    private TaTerror taTerror;
 
     private Image userImage = new Image(this.getClass().getResourceAsStream("/images/DaUser.png"));
     private Image taTerrorImage = new Image(this.getClass().getResourceAsStream("/images/DaDuke.png"));
@@ -47,7 +46,7 @@ public class MainWindow {
      *
      * @param t the chatbot instance to route all future user input through
      */
-    public void setTaTerror(TATerror t) {
+    public void setTaTerror(TaTerror t) {
         taTerror = t;
         dialogContainer.getChildren().add(
                 DialogBox.getTaTerrorDialog("Oh. It's you. I'm TA Terror. Try not to waste my time.", taTerrorImage)

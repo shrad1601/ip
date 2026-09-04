@@ -21,7 +21,7 @@ import taterror.ui.Ui;
  * {@link #getResponse(String)}. Command recognition/extraction is delegated to
  * {@link Parser}.
  */
-public class TATerror {
+public class TaTerror {
     private static final String DATA_FILE_PATH = "." + File.separator + "data" + File.separator + "tasks.txt";
 
     private final Storage storage;
@@ -31,7 +31,7 @@ public class TATerror {
      * Creates a new TA Terror instance, loading any previously saved tasks from
      * the save file (starting with an empty list if none exists).
      */
-    public TATerror() {
+    public TaTerror() {
         storage = new Storage(DATA_FILE_PATH);
         tasks = new TaskList(storage.load());
     }
@@ -152,7 +152,7 @@ public class TATerror {
      * @param args unused
      */
     public static void main(String[] args) {
-        TATerror taTerror = new TATerror();
+        TaTerror taTerror = new TaTerror();
         Ui ui = new Ui();
         ui.showGreeting();
 
