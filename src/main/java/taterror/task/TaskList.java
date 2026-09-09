@@ -2,6 +2,7 @@ package taterror.task;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * The in-memory list of tasks, and the operations to add, remove, look up, and
@@ -85,12 +86,8 @@ public class TaskList {
      */
     public List<Task> findByKeyword(String keyword) {
         assert keyword != null : "keyword should never be null; caller must supply real text";
-        List<Task> matches = new ArrayList<>();
-        for (Task task : tasks) {
-            if (task.getDescription().contains(keyword)) {
-                matches.add(task);
-            }
-        }
-        return matches;
+        return tasks.stream()
+                .filter(task -> task.getDescription().contains(keyword))
+                .collect(Collectors.toList());
     }
 }
