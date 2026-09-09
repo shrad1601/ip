@@ -5,5 +5,5 @@ package taterror.parser;
  * {@link Parser#parseCommandType(String)}.
  */
 public enum CommandType {
-    BYE, LIST, MARK, UNMARK, DELETE, TODO, DEADLINE, EVENT, FIND, UNKNOWN
+    BYE, LIST, MARK, UNMARK, DELETE, TODO, DEADLINE, EVENT, FIND, PRIORITY, UNKNOWN
 }
