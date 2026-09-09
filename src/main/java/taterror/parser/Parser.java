@@ -76,6 +76,14 @@ public class Parser {
     }
 
     /**
+     * Returns whether {@code input} is a {@code priority} command (with or
+     * without arguments).
+     */
+    public static boolean isPriorityCommand(String input) {
+        return input.equals("priority") || input.startsWith("priority ");
+    }
+
+    /**
      * Returns the {@link CommandType} that {@code input} represents, or
      * {@link CommandType#UNKNOWN} if it doesn't match any recognized command.
      */
@@ -98,6 +106,8 @@ public class Parser {
             return CommandType.EVENT;
         } else if (isFindCommand(input)) {
             return CommandType.FIND;
+        } else if (isPriorityCommand(input)) {
+            return CommandType.PRIORITY;
         } else {
             return CommandType.UNKNOWN;
         }
@@ -167,5 +177,23 @@ public class Parser {
         String[] toSplit = fromSplit[1].split(" /to ");
         assert toSplit.length >= 2 : "fromSplit[1] contains ' /to ', so splitting on it must yield at least 2 parts";
         return new String[] {fromSplit[0], toSplit[0], toSplit[1]};
+    }
+
+    /**
+     * Strips an optional trailing {@code /priority <level>} flag off
+     * {@code arguments}, e.g. for {@code "read book /priority high"}.
+     * Must run before any other splitting (e.g. {@link #splitDeadlineArgs}),
+     * since the flag is always the last thing on the line.
+     *
+     * @param arguments a todo/deadline/event command's arguments
+     * @return {@code [argumentsWithoutFlag, rawLevelText]}, where the second
+     *         element is {@code null} if there was no {@code /priority} flag
+     */
+    public static String[] extractPriorityFlag(String arguments) {
+        if (!arguments.contains(" /priority ")) {
+            return new String[] {arguments, null};
+        }
+        String[] parts = arguments.split(" /priority ", 2);
+        return new String[] {parts[0], parts[1].trim()};
     }
 }

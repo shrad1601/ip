@@ -9,6 +9,7 @@ import taterror.parser.Parser;
 import taterror.storage.Storage;
 import taterror.task.Deadline;
 import taterror.task.Event;
+import taterror.task.Priority;
 import taterror.task.Task;
 import taterror.task.TaskList;
 import taterror.task.Todo;
@@ -46,9 +47,14 @@ public class TaTerror {
      * <p>Supported commands: {@code bye}, {@code list}, {@code mark <n>},
      * {@code unmark <n>}, {@code delete <n>}, {@code todo <description>},
      * {@code deadline <description> /by <date>},
-     * {@code event <description> /from <start> /to <end>}, and
-     * {@code find <keyword>}. Anything else, or a malformed index for
-     * mark/unmark/delete, produces an error reply rather than throwing.
+     * {@code event <description> /from <start> /to <end>},
+     * {@code find <keyword>}, and {@code priority <n> <level>}. The
+     * {@code todo}/{@code deadline}/{@code event} commands also accept an
+     * optional trailing {@code /priority <level>} flag. A level is one of
+     * {@code none}, {@code low}, {@code medium}, or {@code high}
+     * (case-insensitive). Anything else, or a malformed index for
+     * mark/unmark/delete/priority, produces an error reply rather than
+     * throwing.
      *
      * @param input the raw command line typed by the user
      * @return the chatbot's reply, ready to display as-is
@@ -73,6 +79,8 @@ public class TaTerror {
                     return handleEvent(input);
                 case FIND:
                     return handleFind(input);
+                case PRIORITY:
+                    return handlePriority(input);
                 case UNKNOWN:
                 default:
                     return "OOPS!!! I have no idea what you just said. Try again, slower this time.";
@@ -132,11 +140,17 @@ public class TaTerror {
      * given, and persists the change.
      */
     private String handleTodo(String input) {
-        String description = Parser.parseArguments(input, "todo").trim();
+        String[] priorityResult = Parser.extractPriorityFlag(Parser.parseArguments(input, "todo"));
+        String description = priorityResult[0].trim();
         if (description.isEmpty()) {
             return "OOPS!!! A todo needs an actual description. Use your words.";
         }
+        Priority priority = parsePriorityOrNone(priorityResult[1]);
+        if (priority == null) {
+            return "OOPS!!! That's not a real priority. Try none, low, medium, or high.";
+        }
         Task todo = new Todo(description);
+        todo.setPriority(priority);
         tasks.add(todo);
         storage.save(tasks.asList());
         return addTaskMessage(todo);
@@ -147,13 +161,18 @@ public class TaTerror {
      * description and a {@code /by} date, and persists the change.
      */
     private String handleDeadline(String input) {
-        String deadlineRest = Parser.parseArguments(input, "deadline");
-        String[] deadlineParts = Parser.splitDeadlineArgs(deadlineRest);
+        String[] priorityResult = Parser.extractPriorityFlag(Parser.parseArguments(input, "deadline"));
+        String[] deadlineParts = Parser.splitDeadlineArgs(priorityResult[0]);
         if (deadlineParts == null) {
             return "OOPS!!! A deadline needs a description AND a '/by' date (e.g. 2019-10-15).";
         }
         assert deadlineParts.length >= 2 : "splitDeadlineArgs guarantees at least [description, by]";
+        Priority priority = parsePriorityOrNone(priorityResult[1]);
+        if (priority == null) {
+            return "OOPS!!! That's not a real priority. Try none, low, medium, or high.";
+        }
         Task deadline = new Deadline(deadlineParts[0], deadlineParts[1]);
+        deadline.setPriority(priority);
         tasks.add(deadline);
         storage.save(tasks.asList());
         return addTaskMessage(deadline);
@@ -165,16 +184,57 @@ public class TaTerror {
      * change.
      */
     private String handleEvent(String input) {
-        String eventRest = Parser.parseArguments(input, "event");
-        String[] eventParts = Parser.splitEventArgs(eventRest);
+        String[] priorityResult = Parser.extractPriorityFlag(Parser.parseArguments(input, "event"));
+        String[] eventParts = Parser.splitEventArgs(priorityResult[0]);
         if (eventParts == null) {
             return "OOPS!!! An event needs '/from' and '/to' details. Don't skip steps.";
         }
         assert eventParts.length == 3 : "splitEventArgs guarantees [description, from, to]";
+        Priority priority = parsePriorityOrNone(priorityResult[1]);
+        if (priority == null) {
+            return "OOPS!!! That's not a real priority. Try none, low, medium, or high.";
+        }
         Task event = new Event(eventParts[0], eventParts[1], eventParts[2]);
+        event.setPriority(priority);
         tasks.add(event);
         storage.save(tasks.asList());
         return addTaskMessage(event);
+    }
+
+    /**
+     * Handles a {@code priority} command: updates an existing task's priority
+     * level and persists the change.
+     */
+    private String handlePriority(String input) {
+        String[] parts = Parser.parseArguments(input, "priority").split(" ", 2);
+        if (parts.length < 2 || parts[0].isEmpty() || parts[1].isBlank()) {
+            return "OOPS!!! Usage: priority <task number> <none|low|medium|high>.";
+        }
+        int index = Integer.parseInt(parts[0]) - 1;
+        if (!tasks.isValidIndex(index)) {
+            return "OOPS!!! That task number doesn't even exist. Try again.";
+        }
+        Priority priority = Priority.fromString(parts[1].trim());
+        if (priority == null) {
+            return "OOPS!!! That's not a real priority. Try none, low, medium, or high.";
+        }
+        Task task = tasks.get(index);
+        task.setPriority(priority);
+        storage.save(tasks.asList());
+        return "Fine, priority updated:\n  " + task;
+    }
+
+    /**
+     * Parses an optional {@code /priority} flag's raw text, e.g. from
+     * {@link Parser#extractPriorityFlag}: {@code null} (flag absent) becomes
+     * {@link Priority#NONE}, and anything else is parsed via
+     * {@link Priority#fromString}.
+     *
+     * @return the resulting priority, or {@code null} if the flag's text
+     *         wasn't a real priority level
+     */
+    private Priority parsePriorityOrNone(String rawLevel) {
+        return rawLevel == null ? Priority.NONE : Priority.fromString(rawLevel);
     }
 
     /**

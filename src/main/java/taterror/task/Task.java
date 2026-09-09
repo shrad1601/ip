@@ -8,6 +8,7 @@ package taterror.task;
 public abstract class Task {
     private final String description;
     private boolean isDone;
+    private Priority priority = Priority.NONE;
 
     protected Task(String description) {
         assert description != null : "Task description should never be null; callers must supply real text";
@@ -34,6 +35,18 @@ public abstract class Task {
 
     public String getDescription() {
         return description;
+    }
+
+    public Priority getPriority() {
+        return priority;
+    }
+
+    /**
+     * Sets this task's priority level.
+     */
+    public void setPriority(Priority priority) {
+        assert priority != null : "priority should never be null; use Priority.NONE instead";
+        this.priority = priority;
     }
 
     /**
@@ -64,6 +77,7 @@ public abstract class Task {
         String status = isDone ? "[X]" : "[ ]";
         String base = "[" + getTypeCode() + "]" + status + " " + description;
         String detail = toDisplayDetail();
-        return detail.isEmpty() ? base : base + " " + detail;
+        String withDetail = detail.isEmpty() ? base : base + " " + detail;
+        return priority == Priority.NONE ? withDetail : withDetail + " (priority: " + priority + ")";
     }
 }

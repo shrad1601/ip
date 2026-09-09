@@ -12,6 +12,7 @@ import java.util.Scanner;
 
 import taterror.task.Deadline;
 import taterror.task.Event;
+import taterror.task.Priority;
 import taterror.task.Task;
 import taterror.task.Todo;
 
@@ -65,17 +66,27 @@ public class Storage {
         assert fields.length >= 3 : "Every save-file line has at least [type, doneFlag, description]";
         String type = fields[0];
         Task task;
+        int priorityIndex;
         if (type.equals("D")) {
             assert fields.length >= 4 : "A 'D' line must also carry the 'by' field";
             task = new Deadline(fields[2], fields[3]);
+            priorityIndex = 4;
         } else if (type.equals("E")) {
             assert fields.length >= 5 : "An 'E' line must also carry the 'from' and 'to' fields";
             task = new Event(fields[2], fields[3], fields[4]);
+            priorityIndex = 5;
         } else {
             task = new Todo(fields[2]);
+            priorityIndex = 3;
         }
         if (fields[1].equals("1")) {
             task.markAsDone();
+        }
+        if (fields.length > priorityIndex) {
+            Priority priority = Priority.fromString(fields[priorityIndex]);
+            if (priority != null) {
+                task.setPriority(priority);
+            }
         }
         return task;
     }
@@ -94,8 +105,9 @@ public class Storage {
             FileWriter writer = new FileWriter(dataPath.toFile());
             for (Task task : tasks) {
                 String doneFlag = task.isDone() ? "1" : "0";
+                String priorityDetail = task.getPriority() == Priority.NONE ? "" : " | " + task.getPriority();
                 writer.write(task.getTypeCode() + " | " + doneFlag + " | " + task.getDescription()
-                        + task.toSaveDetail() + "\n");
+                        + task.toSaveDetail() + priorityDetail + "\n");
             }
             writer.close();
         } catch (IOException e) {

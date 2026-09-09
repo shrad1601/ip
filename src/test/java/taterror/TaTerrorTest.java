@@ -82,4 +82,29 @@ public class TaTerrorTest {
         TaTerror taTerror = new TaTerror();
         assertEquals("OOPS!!! Find what, exactly? Give me a keyword.", taTerror.getResponse("find"));
     }
+
+    @Test
+    public void getResponse_priorityWithoutLevel_returnsUsageError() {
+        TaTerror taTerror = new TaTerror();
+        assertEquals(
+                "OOPS!!! Usage: priority <task number> <none|low|medium|high>.",
+                taTerror.getResponse("priority 1"));
+    }
+
+    @Test
+    public void getResponse_priorityWithOutOfRangeIndex_returnsRangeError() {
+        TaTerror taTerror = new TaTerror();
+        // Index is numeric but absurdly out of range, so no task is actually touched/saved.
+        assertEquals(
+                "OOPS!!! That task number doesn't even exist. Try again.",
+                taTerror.getResponse("priority 99999 high"));
+    }
+
+    @Test
+    public void getResponse_todoWithInvalidPriorityFlag_returnsValidationErrorAndDoesNotAddTask() {
+        TaTerror taTerror = new TaTerror();
+        assertEquals(
+                "OOPS!!! That's not a real priority. Try none, low, medium, or high.",
+                taTerror.getResponse("todo read book /priority urgent"));
+    }
 }
