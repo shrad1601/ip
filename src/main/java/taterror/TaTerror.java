@@ -1,6 +1,9 @@
 package taterror;
 
 import java.io.File;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import taterror.parser.Parser;
 import taterror.storage.Storage;
@@ -58,9 +61,7 @@ public class TaTerror {
                     return "Bye. Try to disappoint someone else next time.";
                 case LIST:
                     response.append("Here are the tasks in your list:\n");
-                    for (int i = 0; i < tasks.size(); i++) {
-                        response.append((i + 1) + "." + tasks.get(i) + "\n");
-                    }
+                    response.append(renderNumbered(tasks.asList()));
                     break;
                 case MARK:
                 case UNMARK:
@@ -137,15 +138,9 @@ public class TaTerror {
                     if (keyword.isEmpty()) {
                         response.append("OOPS!!! Find what, exactly? Give me a keyword.");
                     } else {
+                        List<Task> matches = tasks.findByKeyword(keyword);
                         response.append("Here are the matching tasks in your list:\n");
-                        int matchCount = 0;
-                        for (Task match : tasks.findByKeyword(keyword)) {
-                            matchCount++;
-                            response.append(matchCount + "." + match + "\n");
-                        }
-                        if (matchCount == 0) {
-                            response.append("No matches. Shocking, I know.");
-                        }
+                        response.append(matches.isEmpty() ? "No matches. Shocking, I know." : renderNumbered(matches));
                     }
                     break;
                 case UNKNOWN:
@@ -177,6 +172,17 @@ public class TaTerror {
         }
         ui.showResponse(taTerror.getResponse("bye"));
         ui.close();
+    }
+
+    /**
+     * Renders {@code taskList} as newline-separated, 1-indexed lines (e.g.
+     * {@code "1.[T][ ] read book"}), the way both {@code list} and
+     * {@code find} display their results.
+     */
+    private String renderNumbered(List<Task> taskList) {
+        return IntStream.range(0, taskList.size())
+                .mapToObj(i -> (i + 1) + "." + taskList.get(i))
+                .collect(Collectors.joining("\n"));
     }
 
     /**
