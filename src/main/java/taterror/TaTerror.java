@@ -112,6 +112,7 @@ public class TaTerror {
                         response.append(
                                 "OOPS!!! A deadline needs a description AND a '/by' date (e.g. 2019-10-15).");
                     } else {
+                        assert deadlineParts.length >= 2 : "splitDeadlineArgs guarantees at least [description, by]";
                         Task deadline = new Deadline(deadlineParts[0], deadlineParts[1]);
                         tasks.add(deadline);
                         response.append(addTaskMessage(deadline));
@@ -124,6 +125,7 @@ public class TaTerror {
                     if (eventParts == null) {
                         response.append("OOPS!!! An event needs '/from' and '/to' details. Don't skip steps.");
                     } else {
+                        assert eventParts.length == 3 : "splitEventArgs guarantees [description, from, to]";
                         Task event = new Event(eventParts[0], eventParts[1], eventParts[2]);
                         tasks.add(event);
                         response.append(addTaskMessage(event));
