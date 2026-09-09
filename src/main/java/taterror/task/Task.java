@@ -10,6 +10,7 @@ public abstract class Task {
     private boolean isDone;
 
     protected Task(String description) {
+        assert description != null : "Task description should never be null; callers must supply real text";
         this.description = description;
     }
 

@@ -113,6 +113,7 @@ public class Parser {
      * @throws NumberFormatException if the text after the keyword isn't an integer
      */
     public static int parseTaskIndex(String input, String keyword) {
+        assert input.startsWith(keyword) : "input must actually start with the given keyword: " + keyword;
         return Integer.parseInt(input.substring(keyword.length() + 1)) - 1;
     }
 
@@ -127,6 +128,7 @@ public class Parser {
      * @return everything after the keyword, or {@code ""} if there's nothing there
      */
     public static String parseArguments(String input, String keyword) {
+        assert input.startsWith(keyword) : "input must actually start with the given keyword: " + keyword;
         return input.length() > keyword.length() ? input.substring(keyword.length() + 1) : "";
     }
 
@@ -142,7 +144,9 @@ public class Parser {
         if (!arguments.contains(" /by ")) {
             return null;
         }
-        return arguments.split(" /by ");
+        String[] parts = arguments.split(" /by ");
+        assert parts.length >= 2 : "arguments contains ' /by ', so splitting on it must yield at least 2 parts";
+        return parts;
     }
 
     /**
@@ -159,7 +163,9 @@ public class Parser {
             return null;
         }
         String[] fromSplit = arguments.split(" /from ");
+        assert fromSplit.length >= 2 : "arguments contains ' /from ', so splitting on it must yield at least 2 parts";
         String[] toSplit = fromSplit[1].split(" /to ");
+        assert toSplit.length >= 2 : "fromSplit[1] contains ' /to ', so splitting on it must yield at least 2 parts";
         return new String[] {fromSplit[0], toSplit[0], toSplit[1]};
     }
 }
