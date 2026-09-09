@@ -1,6 +1,9 @@
 package taterror;
 
 import java.io.File;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import taterror.parser.Parser;
 import taterror.storage.Storage;
@@ -51,110 +54,143 @@ public class TaTerror {
      * @return the chatbot's reply, ready to display as-is
      */
     public String getResponse(String input) {
-        StringBuilder response = new StringBuilder();
         try {
             switch (Parser.parseCommandType(input)) {
                 case BYE:
                     return "Bye. Try to disappoint someone else next time.";
                 case LIST:
-                    response.append("Here are the tasks in your list:\n");
-                    for (int i = 0; i < tasks.size(); i++) {
-                        response.append((i + 1) + "." + tasks.get(i) + "\n");
-                    }
-                    break;
+                    return handleList();
                 case MARK:
                 case UNMARK:
-                    boolean marking = Parser.isMarkCommand(input);
-                    int markIndex = Parser.parseTaskIndex(input, marking ? "mark" : "unmark");
-                    if (!tasks.isValidIndex(markIndex)) {
-                        response.append("OOPS!!! That task number doesn't even exist. Try again.");
-                    } else {
-                        Task task = tasks.get(markIndex);
-                        if (marking) {
-                            task.markAsDone();
-                        } else {
-                            task.markAsNotDone();
-                        }
-                        response.append(marking
-                                ? "Nice! I've marked this task as done:\n"
-                                : "OK, I've marked this task as not done yet:\n");
-                        response.append("  " + task);
-                        storage.save(tasks.asList());
-                    }
-                    break;
+                    return handleMarkOrUnmark(input);
                 case DELETE:
-                    int deleteIndex = Parser.parseTaskIndex(input, "delete");
-                    if (!tasks.isValidIndex(deleteIndex)) {
-                        response.append("OOPS!!! That task number doesn't even exist. Try again.");
-                    } else {
-                        Task removed = tasks.remove(deleteIndex);
-                        response.append("Noted. I've removed this task:\n");
-                        response.append("  " + removed + "\n");
-                        response.append("Now you have " + tasks.size() + " tasks in the list.");
-                        storage.save(tasks.asList());
-                    }
-                    break;
+                    return handleDelete(input);
                 case TODO:
-                    String description = Parser.parseArguments(input, "todo").trim();
-                    if (description.isEmpty()) {
-                        response.append("OOPS!!! A todo needs an actual description. Use your words.");
-                    } else {
-                        Task todo = new Todo(description);
-                        tasks.add(todo);
-                        response.append(addTaskMessage(todo));
-                        storage.save(tasks.asList());
-                    }
-                    break;
+                    return handleTodo(input);
                 case DEADLINE:
-                    String deadlineRest = Parser.parseArguments(input, "deadline");
-                    String[] deadlineParts = Parser.splitDeadlineArgs(deadlineRest);
-                    if (deadlineParts == null) {
-                        response.append(
-                                "OOPS!!! A deadline needs a description AND a '/by' date (e.g. 2019-10-15).");
-                    } else {
-                        Task deadline = new Deadline(deadlineParts[0], deadlineParts[1]);
-                        tasks.add(deadline);
-                        response.append(addTaskMessage(deadline));
-                        storage.save(tasks.asList());
-                    }
-                    break;
+                    return handleDeadline(input);
                 case EVENT:
-                    String eventRest = Parser.parseArguments(input, "event");
-                    String[] eventParts = Parser.splitEventArgs(eventRest);
-                    if (eventParts == null) {
-                        response.append("OOPS!!! An event needs '/from' and '/to' details. Don't skip steps.");
-                    } else {
-                        Task event = new Event(eventParts[0], eventParts[1], eventParts[2]);
-                        tasks.add(event);
-                        response.append(addTaskMessage(event));
-                        storage.save(tasks.asList());
-                    }
-                    break;
+                    return handleEvent(input);
                 case FIND:
-                    String keyword = Parser.parseArguments(input, "find").trim();
-                    if (keyword.isEmpty()) {
-                        response.append("OOPS!!! Find what, exactly? Give me a keyword.");
-                    } else {
-                        response.append("Here are the matching tasks in your list:\n");
-                        int matchCount = 0;
-                        for (Task match : tasks.findByKeyword(keyword)) {
-                            matchCount++;
-                            response.append(matchCount + "." + match + "\n");
-                        }
-                        if (matchCount == 0) {
-                            response.append("No matches. Shocking, I know.");
-                        }
-                    }
-                    break;
+                    return handleFind(input);
                 case UNKNOWN:
                 default:
-                    response.append("OOPS!!! I have no idea what you just said. Try again, slower this time.");
-                    break;
+                    return "OOPS!!! I have no idea what you just said. Try again, slower this time.";
             }
         } catch (NumberFormatException e) {
-            response.append("OOPS!!! That's not even a number. Are you okay?");
+            return "OOPS!!! That's not even a number. Are you okay?";
         }
-        return response.toString().trim();
+    }
+
+    /**
+     * Handles the {@code list} command: every task, numbered from 1.
+     */
+    private String handleList() {
+        return "Here are the tasks in your list:\n" + renderNumbered(tasks.asList());
+    }
+
+    /**
+     * Handles a {@code mark}/{@code unmark} command: flips the target task's
+     * done state and persists the change.
+     */
+    private String handleMarkOrUnmark(String input) {
+        boolean marking = Parser.isMarkCommand(input);
+        int markIndex = Parser.parseTaskIndex(input, marking ? "mark" : "unmark");
+        if (!tasks.isValidIndex(markIndex)) {
+            return "OOPS!!! That task number doesn't even exist. Try again.";
+        }
+        Task task = tasks.get(markIndex);
+        if (marking) {
+            task.markAsDone();
+        } else {
+            task.markAsNotDone();
+        }
+        storage.save(tasks.asList());
+        String verb = marking
+                ? "Nice! I've marked this task as done:\n"
+                : "OK, I've marked this task as not done yet:\n";
+        return verb + "  " + task;
+    }
+
+    /**
+     * Handles a {@code delete} command: removes the target task and persists
+     * the change.
+     */
+    private String handleDelete(String input) {
+        int deleteIndex = Parser.parseTaskIndex(input, "delete");
+        if (!tasks.isValidIndex(deleteIndex)) {
+            return "OOPS!!! That task number doesn't even exist. Try again.";
+        }
+        Task removed = tasks.remove(deleteIndex);
+        storage.save(tasks.asList());
+        return "Noted. I've removed this task:\n  " + removed
+                + "\nNow you have " + tasks.size() + " tasks in the list.";
+    }
+
+    /**
+     * Handles a {@code todo} command: adds the task if a description was
+     * given, and persists the change.
+     */
+    private String handleTodo(String input) {
+        String description = Parser.parseArguments(input, "todo").trim();
+        if (description.isEmpty()) {
+            return "OOPS!!! A todo needs an actual description. Use your words.";
+        }
+        Task todo = new Todo(description);
+        tasks.add(todo);
+        storage.save(tasks.asList());
+        return addTaskMessage(todo);
+    }
+
+    /**
+     * Handles a {@code deadline} command: adds the task if it has both a
+     * description and a {@code /by} date, and persists the change.
+     */
+    private String handleDeadline(String input) {
+        String deadlineRest = Parser.parseArguments(input, "deadline");
+        String[] deadlineParts = Parser.splitDeadlineArgs(deadlineRest);
+        if (deadlineParts == null) {
+            return "OOPS!!! A deadline needs a description AND a '/by' date (e.g. 2019-10-15).";
+        }
+        assert deadlineParts.length >= 2 : "splitDeadlineArgs guarantees at least [description, by]";
+        Task deadline = new Deadline(deadlineParts[0], deadlineParts[1]);
+        tasks.add(deadline);
+        storage.save(tasks.asList());
+        return addTaskMessage(deadline);
+    }
+
+    /**
+     * Handles an {@code event} command: adds the task if it has a
+     * description, a {@code /from}, and a {@code /to}, and persists the
+     * change.
+     */
+    private String handleEvent(String input) {
+        String eventRest = Parser.parseArguments(input, "event");
+        String[] eventParts = Parser.splitEventArgs(eventRest);
+        if (eventParts == null) {
+            return "OOPS!!! An event needs '/from' and '/to' details. Don't skip steps.";
+        }
+        assert eventParts.length == 3 : "splitEventArgs guarantees [description, from, to]";
+        Task event = new Event(eventParts[0], eventParts[1], eventParts[2]);
+        tasks.add(event);
+        storage.save(tasks.asList());
+        return addTaskMessage(event);
+    }
+
+    /**
+     * Handles a {@code find} command: every task whose description contains
+     * the given keyword, numbered from 1.
+     */
+    private String handleFind(String input) {
+        String keyword = Parser.parseArguments(input, "find").trim();
+        if (keyword.isEmpty()) {
+            return "OOPS!!! Find what, exactly? Give me a keyword.";
+        }
+        List<Task> matches = tasks.findByKeyword(keyword);
+        if (matches.isEmpty()) {
+            return "Here are the matching tasks in your list:\nNo matches. Shocking, I know.";
+        }
+        return "Here are the matching tasks in your list:\n" + renderNumbered(matches);
     }
 
     /**
@@ -175,6 +211,17 @@ public class TaTerror {
         }
         ui.showResponse(taTerror.getResponse("bye"));
         ui.close();
+    }
+
+    /**
+     * Renders {@code taskList} as newline-separated, 1-indexed lines (e.g.
+     * {@code "1.[T][ ] read book"}), the way both {@code list} and
+     * {@code find} display their results.
+     */
+    private String renderNumbered(List<Task> taskList) {
+        return IntStream.range(0, taskList.size())
+                .mapToObj(i -> (i + 1) + "." + taskList.get(i))
+                .collect(Collectors.joining("\n"));
     }
 
     /**
