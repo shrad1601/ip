@@ -2,6 +2,7 @@ package taterror.task;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * The in-memory list of tasks, and the operations to add, remove, look up, and
@@ -23,6 +24,7 @@ public class TaskList {
      * by {@link taterror.storage.Storage#load()}).
      */
     public TaskList(List<Task> initialTasks) {
+        assert initialTasks != null : "initialTasks should never be null; pass an empty list instead";
         this.tasks = new ArrayList<>(initialTasks);
     }
 
@@ -30,6 +32,7 @@ public class TaskList {
      * Appends {@code task} to the end of the list.
      */
     public void add(Task task) {
+        assert task != null : "Cannot add a null task";
         tasks.add(task);
     }
 
@@ -38,6 +41,7 @@ public class TaskList {
      */
     public void addAll(Task... tasks) {
         for (Task task : tasks) {
+            assert task != null : "Cannot add a null task";
             this.tasks.add(task);
         }
     }
@@ -46,10 +50,12 @@ public class TaskList {
      * Removes and returns the task at {@code index}.
      */
     public Task remove(int index) {
+        assert isValidIndex(index) : "Caller must check isValidIndex before remove; index=" + index;
         return tasks.remove(index);
     }
 
     public Task get(int index) {
+        assert isValidIndex(index) : "Caller must check isValidIndex before get; index=" + index;
         return tasks.get(index);
     }
 
@@ -79,12 +85,9 @@ public class TaskList {
      * order.
      */
     public List<Task> findByKeyword(String keyword) {
-        List<Task> matches = new ArrayList<>();
-        for (Task task : tasks) {
-            if (task.getDescription().contains(keyword)) {
-                matches.add(task);
-            }
-        }
-        return matches;
+        assert keyword != null : "keyword should never be null; caller must supply real text";
+        return tasks.stream()
+                .filter(task -> task.getDescription().contains(keyword))
+                .collect(Collectors.toList());
     }
 }

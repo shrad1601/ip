@@ -2,6 +2,8 @@ package taterror;
 
 import java.io.File;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import taterror.parser.Parser;
 import taterror.storage.Storage;
@@ -84,11 +86,7 @@ public class TaTerror {
      * Handles the {@code list} command: every task, numbered from 1.
      */
     private String handleList() {
-        StringBuilder response = new StringBuilder("Here are the tasks in your list:\n");
-        for (int i = 0; i < tasks.size(); i++) {
-            response.append((i + 1) + "." + tasks.get(i) + "\n");
-        }
-        return response.toString().trim();
+        return "Here are the tasks in your list:\n" + renderNumbered(tasks.asList());
     }
 
     /**
@@ -154,6 +152,7 @@ public class TaTerror {
         if (deadlineParts == null) {
             return "OOPS!!! A deadline needs a description AND a '/by' date (e.g. 2019-10-15).";
         }
+        assert deadlineParts.length >= 2 : "splitDeadlineArgs guarantees at least [description, by]";
         Task deadline = new Deadline(deadlineParts[0], deadlineParts[1]);
         tasks.add(deadline);
         storage.save(tasks.asList());
@@ -171,6 +170,7 @@ public class TaTerror {
         if (eventParts == null) {
             return "OOPS!!! An event needs '/from' and '/to' details. Don't skip steps.";
         }
+        assert eventParts.length == 3 : "splitEventArgs guarantees [description, from, to]";
         Task event = new Event(eventParts[0], eventParts[1], eventParts[2]);
         tasks.add(event);
         storage.save(tasks.asList());
@@ -190,11 +190,7 @@ public class TaTerror {
         if (matches.isEmpty()) {
             return "Here are the matching tasks in your list:\nNo matches. Shocking, I know.";
         }
-        StringBuilder response = new StringBuilder("Here are the matching tasks in your list:\n");
-        for (int i = 0; i < matches.size(); i++) {
-            response.append((i + 1) + "." + matches.get(i) + "\n");
-        }
-        return response.toString().trim();
+        return "Here are the matching tasks in your list:\n" + renderNumbered(matches);
     }
 
     /**
@@ -215,6 +211,17 @@ public class TaTerror {
         }
         ui.showResponse(taTerror.getResponse("bye"));
         ui.close();
+    }
+
+    /**
+     * Renders {@code taskList} as newline-separated, 1-indexed lines (e.g.
+     * {@code "1.[T][ ] read book"}), the way both {@code list} and
+     * {@code find} display their results.
+     */
+    private String renderNumbered(List<Task> taskList) {
+        return IntStream.range(0, taskList.size())
+                .mapToObj(i -> (i + 1) + "." + taskList.get(i))
+                .collect(Collectors.joining("\n"));
     }
 
     /**
