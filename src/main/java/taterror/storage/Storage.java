@@ -62,11 +62,14 @@ public class Storage {
      * {@code [type, doneFlag, description, ...type-specific fields]}.
      */
     private Task parseTask(String[] fields) {
+        assert fields.length >= 3 : "Every save-file line has at least [type, doneFlag, description]";
         String type = fields[0];
         Task task;
         if (type.equals("D")) {
+            assert fields.length >= 4 : "A 'D' line must also carry the 'by' field";
             task = new Deadline(fields[2], fields[3]);
         } else if (type.equals("E")) {
+            assert fields.length >= 5 : "An 'E' line must also carry the 'from' and 'to' fields";
             task = new Event(fields[2], fields[3], fields[4]);
         } else {
             task = new Todo(fields[2]);
@@ -84,6 +87,7 @@ public class Storage {
      * crash the app.
      */
     public void save(List<Task> tasks) {
+        assert tasks != null : "tasks should never be null; pass an empty list instead";
         try {
             Path dataPath = Paths.get(filePath);
             Files.createDirectories(dataPath.getParent());
