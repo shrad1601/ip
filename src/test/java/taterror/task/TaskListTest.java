@@ -55,4 +55,36 @@ public class TaskListTest {
 
         assertEquals(1, tasks.findByKeyword("book").size());
     }
+
+    @Test
+    public void hasDuplicateOf_matchingTypeAndDescription_returnsTrue() {
+        TaskList tasks = new TaskList();
+        tasks.add(new Todo("read book"));
+
+        assertTrue(tasks.hasDuplicateOf(new Todo("read book")));
+    }
+
+    @Test
+    public void hasDuplicateOf_sameDescriptionDifferentType_returnsFalse() {
+        TaskList tasks = new TaskList();
+        tasks.add(new Todo("read book"));
+
+        assertFalse(tasks.hasDuplicateOf(new Deadline("read book", "2019-10-15")));
+    }
+
+    @Test
+    public void hasDuplicateOf_sameDescriptionDifferentDate_returnsFalse() {
+        TaskList tasks = new TaskList();
+        tasks.add(new Deadline("submit report", "2019-10-15"));
+
+        assertFalse(tasks.hasDuplicateOf(new Deadline("submit report", "2019-10-16")));
+    }
+
+    @Test
+    public void hasDuplicateOf_noMatch_returnsFalse() {
+        TaskList tasks = new TaskList();
+        tasks.add(new Todo("read book"));
+
+        assertFalse(tasks.hasDuplicateOf(new Todo("sleep")));
+    }
 }

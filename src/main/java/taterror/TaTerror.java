@@ -174,9 +174,10 @@ public class TaTerror {
         }
         Task todo = new Todo(description);
         todo.setPriority(priority);
+        boolean isDuplicate = tasks.hasDuplicateOf(todo);
         tasks.add(todo);
         storage.save(tasks.asList());
-        return addTaskMessage(todo);
+        return addTaskMessage(todo, isDuplicate);
     }
 
     /**
@@ -196,9 +197,10 @@ public class TaTerror {
         }
         Task deadline = new Deadline(deadlineParts[0], deadlineParts[1]);
         deadline.setPriority(priority);
+        boolean isDuplicate = tasks.hasDuplicateOf(deadline);
         tasks.add(deadline);
         storage.save(tasks.asList());
-        return addTaskMessage(deadline);
+        return addTaskMessage(deadline, isDuplicate);
     }
 
     /**
@@ -219,9 +221,10 @@ public class TaTerror {
         }
         Task event = new Event(eventParts[0], eventParts[1], eventParts[2]);
         event.setPriority(priority);
+        boolean isDuplicate = tasks.hasDuplicateOf(event);
         tasks.add(event);
         storage.save(tasks.asList());
-        return addTaskMessage(event);
+        return addTaskMessage(event, isDuplicate);
     }
 
     /**
@@ -317,10 +320,14 @@ public class TaTerror {
 
     /**
      * Builds the standard "task added" confirmation message for {@code task},
-     * including the updated task count.
+     * including the updated task count and, if {@code isDuplicate} is true, a
+     * heads-up that an identical task was already on the list.
      */
-    private String addTaskMessage(Task task) {
-        return "Got it. I've added this task:\n  " + task
+    private String addTaskMessage(Task task, boolean isDuplicate) {
+        String duplicateWarning = isDuplicate
+                ? "Heads up, that looks identical to a task you already added.\n"
+                : "";
+        return duplicateWarning + "Got it. I've added this task:\n  " + task
                 + "\nNow you have " + tasks.size() + " tasks in the list.";
     }
 }

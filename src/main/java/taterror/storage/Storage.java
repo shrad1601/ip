@@ -47,8 +47,16 @@ public class Storage {
         List<Task> tasks = new ArrayList<>();
         try {
             Scanner fileScanner = new Scanner(dataFile);
+            int lineNumber = 0;
             while (fileScanner.hasNextLine()) {
-                tasks.add(parseTask(fileScanner.nextLine().split(" \\| ")));
+                lineNumber++;
+                String line = fileScanner.nextLine();
+                try {
+                    tasks.add(parseTask(line.split(" \\| ")));
+                } catch (RuntimeException e) {
+                    System.out.println("OOPS!!! Save file line " + lineNumber
+                            + " looks corrupted, skipping it: " + line);
+                }
             }
             fileScanner.close();
         } catch (IOException e) {
