@@ -17,17 +17,15 @@ import org.junit.jupiter.api.Test;
 public class TaTerrorTest {
 
     @Test
-    public void getResponse_byeCommand_returnsFarewellMessage() {
+    public void getResponse_byeCommand_returnsOneOfTheKnownFarewellMessages() {
         TaTerror taTerror = new TaTerror();
-        assertEquals("Bye. Try to disappoint someone else next time.", taTerror.getResponse("bye"));
+        assertTrue(TaTerror.BYE_RESPONSES.contains(taTerror.getResponse("bye")));
     }
 
     @Test
-    public void getResponse_unrecognizedCommand_returnsErrorMessage() {
+    public void getResponse_unrecognizedCommand_returnsOneOfTheKnownErrorMessages() {
         TaTerror taTerror = new TaTerror();
-        assertEquals(
-                "OOPS!!! I have no idea what you just said. Try again, slower this time.",
-                taTerror.getResponse("blahblahblah"));
+        assertTrue(TaTerror.UNKNOWN_COMMAND_RESPONSES.contains(taTerror.getResponse("blahblahblah")));
     }
 
     @Test

@@ -2,6 +2,7 @@ package taterror;
 
 import java.io.File;
 import java.util.List;
+import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -26,10 +27,31 @@ import taterror.ui.Ui;
  * {@link Parser}.
  */
 public class TaTerror {
+    /**
+     * Farewell lines for {@code bye}, picked at random so repeat sessions don't
+     * see the exact same sign-off every time.
+     */
+    static final List<String> BYE_RESPONSES = List.of(
+            "Bye. Try to disappoint someone else next time.",
+            "Bye. Go be someone else's problem now.",
+            "Bye. Don't let the door hit you on the way out.",
+            "Bye. I wasn't enjoying this either.");
+
+    /**
+     * Error lines for an unrecognized command, picked at random for the same
+     * reason as {@link #BYE_RESPONSES}.
+     */
+    static final List<String> UNKNOWN_COMMAND_RESPONSES = List.of(
+            "OOPS!!! I have no idea what you just said. Try again, slower this time.",
+            "OOPS!!! That's not a command. That's just noise.",
+            "OOPS!!! Yeah, no. Try that again, but make sense this time.",
+            "OOPS!!! I don't do guesswork. Type something real.");
+
     private static final String DATA_FILE_PATH = "." + File.separator + "data" + File.separator + "tasks.txt";
 
     private final Storage storage;
     private final TaskList tasks;
+    private final Random random;
 
     /**
      * Creates a new TA Terror instance, loading any previously saved tasks from
@@ -38,6 +60,7 @@ public class TaTerror {
     public TaTerror() {
         storage = new Storage(DATA_FILE_PATH);
         tasks = new TaskList(storage.load());
+        random = new Random();
     }
 
     /**
@@ -63,7 +86,7 @@ public class TaTerror {
         try {
             switch (Parser.parseCommandType(input)) {
                 case BYE:
-                    return "Bye. Try to disappoint someone else next time.";
+                    return pickRandom(BYE_RESPONSES);
                 case LIST:
                     return handleList();
                 case MARK:
@@ -83,7 +106,7 @@ public class TaTerror {
                     return handlePriority(input);
                 case UNKNOWN:
                 default:
-                    return "OOPS!!! I have no idea what you just said. Try again, slower this time.";
+                    return pickRandom(UNKNOWN_COMMAND_RESPONSES);
             }
         } catch (NumberFormatException e) {
             return "OOPS!!! That's not even a number. Are you okay?";
@@ -282,6 +305,14 @@ public class TaTerror {
         return IntStream.range(0, taskList.size())
                 .mapToObj(i -> (i + 1) + "." + taskList.get(i))
                 .collect(Collectors.joining("\n"));
+    }
+
+    /**
+     * Returns a uniformly random element of {@code responses}, e.g. one of
+     * {@link #BYE_RESPONSES} or {@link #UNKNOWN_COMMAND_RESPONSES}.
+     */
+    private String pickRandom(List<String> responses) {
+        return responses.get(random.nextInt(responses.size()));
     }
 
     /**
