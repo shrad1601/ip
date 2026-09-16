@@ -13,6 +13,7 @@ import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
+import javafx.scene.shape.Circle;
 
 /**
  * One chat bubble: a speaker's avatar next to a text label, loaded from
@@ -41,6 +42,16 @@ public class DialogBox extends HBox {
 
         dialog.setText(text);
         displayPicture.setImage(img);
+        clipToCircle();
+    }
+
+    /**
+     * Masks {@link #displayPicture} to a circle matching its rendered size, so
+     * avatars read as profile pictures instead of plain square thumbnails.
+     */
+    private void clipToCircle() {
+        double radius = Math.min(displayPicture.getFitWidth(), displayPicture.getFitHeight()) / 2;
+        displayPicture.setClip(new Circle(radius, radius, radius));
     }
 
     /**
