@@ -90,4 +90,18 @@ public class TaskList {
                 .filter(task -> task.getDescription().contains(keyword))
                 .collect(Collectors.toList());
     }
+
+    /**
+     * Returns whether this list already has a task matching {@code candidate}'s
+     * type, description, and type-specific fields (e.g. the same {@code /by}
+     * date, or the same {@code /from}/{@code /to}) - i.e. {@code candidate}
+     * would be a duplicate if added. Done-status and priority aren't compared,
+     * since neither affects what the task actually represents.
+     */
+    public boolean hasDuplicateOf(Task candidate) {
+        assert candidate != null : "candidate should never be null";
+        return tasks.stream().anyMatch(task -> task.getTypeCode().equals(candidate.getTypeCode())
+                && task.getDescription().equals(candidate.getDescription())
+                && task.toSaveDetail().equals(candidate.toSaveDetail()));
+    }
 }
