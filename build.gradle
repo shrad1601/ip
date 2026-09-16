@@ -22,6 +22,19 @@ repositories {
 
 dependencies {
     String jUnitVersion = '5.14.4'
+    String javafxVersion = '21.0.4'
+
+    // The javafx {} block above only bundles natives for THIS build machine's
+    // platform (e.g. mac-aarch64), so the shadow jar built here would crash
+    // with "no suitable pipeline found" on any other OS - it'd be missing
+    // that OS's native rendering libraries entirely. Add every other
+    // platform's classified artifacts explicitly so the fat jar carries
+    // natives for all of them and actually runs cross-platform.
+    ['javafx-base', 'javafx-graphics', 'javafx-controls', 'javafx-fxml'].each { module ->
+        ['win', 'mac', 'mac-aarch64', 'linux'].each { platform ->
+            implementation "org.openjfx:${module}:${javafxVersion}:${platform}"
+        }
+    }
 
     testImplementation "org.junit.jupiter:junit-jupiter-api:${jUnitVersion}"
 
